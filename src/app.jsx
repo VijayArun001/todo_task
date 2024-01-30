@@ -11,6 +11,7 @@ import { TodoResults } from './components/todo-results';
 import { TodoLogin } from './components/todo-login';
 import { TodoSignUp } from './components/todo-signup';
 import { TodosContext } from './todo-context';
+import IndexedDB from './function/indexDB.function';
 import './index.scss';
 
 export const App = () => {
@@ -19,20 +20,10 @@ export const App = () => {
   const [isSignInEnable, setIsSignInEnable] = useState(false);
   const contextValue = { todos, setTodos };
 
-  const openDB = () => new Promise((resolve, reject) => {
-    const request = window.indexedDB.open('TodoDB', 1);
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-
   useEffect(() => {
     const fetchDataFromIndexedDB = async () => {
       try {
-        const db = await openDB();
+        const db = await IndexedDB?.openDB();
         const transaction = db.transaction(['tasks'], 'readonly');
         const store = transaction.objectStore('tasks');
         const request = store.getAll();
