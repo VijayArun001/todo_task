@@ -1,37 +1,20 @@
 import * as React from 'react';
 import { Checkbox } from '../checkbox';
 import { TodosContext } from '../../todo-context';
+import IndexedDB from '../../function/indexDB.function';
 import './todo-list.scss';
 
 export const TodoList = () => {
   const { todos, setTodos } = React.useContext(TodosContext);
 
-  const openDB = () => new Promise((resolve, reject) => {
-    const request = window.indexedDB.open('TodoDB', 1);
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-
-  const getAllTasksFromDB = (db) => new Promise((resolve, reject) => {
-    const transaction = db.transaction(['tasks'], 'readonly');
-    const store = transaction.objectStore('tasks');
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-
   const handleDelete = async (id) => {
     try {
-      const db = await openDB();
+      const db = await IndexedDB?.openDB();
       const transaction = db.transaction(['tasks'], 'readwrite');
       const store = transaction.objectStore('tasks');
       const request = store.delete(id);
       request.onsuccess = async () => {
-        const updatedTodos = await getAllTasksFromDB(db);
+        const updatedTodos = await IndexedDB?.getAllTasksFromDB(db);
         setTodos(updatedTodos);
       };
       request.onerror = () => {
@@ -44,7 +27,7 @@ export const TodoList = () => {
 
   const toggleCheck = async (id) => {
     try {
-      const db = await openDB();
+      const db = await IndexedDB?.openDB();
       const transaction = db.transaction(['tasks'], 'readwrite');
       const store = transaction.objectStore('tasks');
       const request = store.get(id);
@@ -54,7 +37,7 @@ export const TodoList = () => {
           task.checked = !task.checked;
           const updateRequest = store.put(task);
           updateRequest.onsuccess = async () => {
-            const updatedTodos = await getAllTasksFromDB(db);
+            const updatedTodos = await IndexedDB?.getAllTasksFromDB(db);
             console.log('Checked', updatedTodos);
             setTodos(updatedTodos);
           };

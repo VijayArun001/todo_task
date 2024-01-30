@@ -1,27 +1,31 @@
 import * as React from 'react';
 import './todo-signup.scss';
-import { TodosContext } from '../../todo-context';
+import SignUp from '../../api/signup.api';
 
 export const TodoSignUp = (props) => {
     const [data, setData] = React.useState({
-       username: '',
+       email: '',
        password: '',
-       useremail: '',
-       usernumber: '',
+       repassword: '',
     });
-
+    const [errorMessage, setErrorMessage] = React.useState('');
     const handleOnChange = (value, name) => {
         setData((prevData) => ({
           ...prevData,
           [name]: value?.trim(),
         }));
     };
-    const handleLogin = () => {
-        const usernameLength = (data.username)?.length;
-        const passwordLength = (data.password)?.length;
-        const useremailLength = (data.useremail)?.length;
-        if (usernameLength && passwordLength && useremailLength) {
-            props?.onLogin();
+    const handleLogin = async () => {
+      setErrorMessage('');
+        if ((data?.password)?.trim() === (data?.repassword)?.trim()) {
+          const createUser = await SignUp?.signup(data?.email, data?.password);
+          if (createUser?.output === 200) {
+            props?.onSignIn();
+          } else {
+            setErrorMessage('*Something Went Wrong please try again');
+          }
+        } else {
+            setErrorMessage('*Password does not match');
         }
     };
 
@@ -32,37 +36,16 @@ export const TodoSignUp = (props) => {
           Sign Up
         </p>
       </div>
-      <form>
-        <div className="signup-input">
-          <input
-            type="text"
-            id="username"
-            name="username"
-            required
-            className="input-bg"
-            placeholder="Enter your user name..."
-            onChange={(e) => handleOnChange(e?.target?.value, 'username')}
-          />
-        </div>
+      <form onSubmit={(e) => { handleLogin(); e?.preventDefault(); }}>
         <div className="signup-input">
           <input
             type="email"
-            id="useremail"
-            name="useremail"
+            id="email"
+            name="email"
             required
             className="input-bg"
             placeholder="Enter your user email..."
-            onChange={(e) => handleOnChange(e?.target?.value, 'useremail')}
-          />
-        </div>
-        <div className="signup-input">
-          <input
-            type="text"
-            id="usernumber"
-            name="usernumber"
-            className="input-bg"
-            placeholder="Enter your user number..."
-            onChange={(e) => handleOnChange(e?.target?.value, 'usernumber')}
+            onChange={(e) => handleOnChange(e?.target?.value, 'email')}
           />
         </div>
         <div className="signup-input">
@@ -76,11 +59,29 @@ export const TodoSignUp = (props) => {
             onChange={(e) => handleOnChange(e?.target?.value, 'password')}
           />
         </div>
+        <div className="signup-input">
+          <input
+            type="password"
+            id="repassword"
+            name="repassword"
+            required
+            className="input-bg"
+            placeholder="Re Enter your password..."
+            onChange={(e) => handleOnChange(e?.target?.value, 'repassword')}
+          />
+        </div>
+        {
+            (errorMessage)?.trim()?.length > 0 && (
+            <span className="signup-error">
+              {errorMessage}
+            </span>
+        )
+        }
         <div className="signup-btn">
           <button type="button" className="signup-cancel" onClick={() => props?.onSignIn()}>
             Cancel
           </button>
-          <button type="submit" className="signup-button" onClick={() => { handleLogin(); }}>
+          <button type="submit" className="signup-button">
             Sign Up
           </button>
         </div>

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import './todo-login.scss';
-import { TodosContext } from '../../todo-context';
+import Login from '../../api/login.api';
 
 export const TodoLogin = (props) => {
     const [data, setData] = React.useState({
-       username: '',
+       useremail: '',
        password: '',
     });
     const [errorMessage, setErrorMessage] = React.useState(false);
@@ -15,12 +15,13 @@ export const TodoLogin = (props) => {
           [name]: value?.trim(),
         }));
     };
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setErrorMessage(false);
-    if (((data.username) === 'testuser') && (((data.password) === 'test@123'))) {
-        props?.onLogin();
+    const checkLogin = await Login?.checkUser(data?.useremail, data?.password);
+    if (checkLogin?.output === 200) {
+      props?.onLogin();
     } else {
-        setErrorMessage(true);
+      setErrorMessage(true);
     }
   };
 
@@ -31,16 +32,16 @@ export const TodoLogin = (props) => {
           Todo Application
         </p>
       </div>
-      <form>
+      <form onSubmit={(e) => { handleLogin(); e?.preventDefault(); }}>
         <div className="login-input">
           <input
-            type="text"
-            id="username"
-            name="username"
+            type="email"
+            id="useremail"
+            name="useremail"
             required
             className="input-bg"
-            placeholder="Enter your user name..."
-            onChange={(e) => handleOnChange(e?.target?.value, 'username')}
+            placeholder="Enter your user email..."
+            onChange={(e) => handleOnChange(e?.target?.value, 'useremail')}
           />
         </div>
         <div className="login-input">
@@ -62,7 +63,7 @@ export const TodoLogin = (props) => {
         )
         }
         <div className="login-btn">
-          <button type="submit" className="login-button" onClick={(e) => { handleLogin(); e?.preventDefault(); }}>
+          <button type="submit" className="login-button">
             Log In
           </button>
         </div>
